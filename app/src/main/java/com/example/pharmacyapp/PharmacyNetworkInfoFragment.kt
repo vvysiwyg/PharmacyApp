@@ -3,7 +3,6 @@ package com.example.pharmacyapp
 import android.content.Context
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -11,12 +10,15 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import androidx.activity.OnBackPressedCallback
-import com.example.pharmacyapp.Consts.PHARMACY_NETWORK_INFO_FRAGMENT_TAG
 import com.example.pharmacyapp.data.PharmacyNetwork
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import java.util.*
 
 class PharmacyNetworkInfoFragment : Fragment() {
 
+    private val gsonBuilder = GsonBuilder()
+    private val gson: Gson = gsonBuilder.create()
     private var pharmacyNetwork: PharmacyNetwork? = null
     private lateinit var pharmacyNetworkInfoViewModel: PharmacyNetworkInfoViewModel
     private lateinit var etPharmacyNetwork: EditText
@@ -36,7 +38,6 @@ class PharmacyNetworkInfoFragment : Fragment() {
 
     override fun onCreate(savedInstanceState: Bundle?){
         super.onCreate(savedInstanceState)
-
         var pharmacyNetworkId: UUID = UUID.fromString(arguments?.getString(Consts.PHARMACY_NETWORK_ID_TAG))
         pharmacyNetworkInfoViewModel = ViewModelProvider(this).get(PharmacyNetworkInfoViewModel::class.java)
         pharmacyNetworkInfoViewModel.loadPharmacyNetwork(pharmacyNetworkId)
@@ -49,25 +50,9 @@ class PharmacyNetworkInfoFragment : Fragment() {
         val view = inflater.inflate(R.layout.pharmacy_network_info, container, false)
         etPharmacyNetwork=view.findViewById(R.id.etPharmacyNetwork)
         btnSave=view.findViewById(R.id.pnAddBtn)
-        btnSave.setOnClickListener{
-            if(pharmacyNetwork == null) {
-                pharmacyNetwork = PharmacyNetwork()
-                updatePharmacyNetwork()
-                pharmacyNetworkInfoViewModel.newPharmacyNetwork(pharmacyNetwork!!)
-            }
-            else {
-                updatePharmacyNetwork()
-                pharmacyNetworkInfoViewModel.savePharmacyNetwork(pharmacyNetwork!!)
-            }
-            callbacks?.showDBPharmacyNetworks()
-        }
+        btnSave.setOnClickListener{ btnSaveClick() }
         btnDelete=view.findViewById(R.id.pnDeleteBtn)
-        btnDelete.setOnClickListener{
-            if(pharmacyNetwork != null) {
-                pharmacyNetworkInfoViewModel.deletePharmacyNetwork(pharmacyNetwork!!)
-                callbacks?.showDBPharmacyNetworks()
-            }
-        }
+        btnDelete.setOnClickListener{ btnDeleteClick() }
         return view
     }
 
@@ -117,4 +102,31 @@ class PharmacyNetworkInfoFragment : Fragment() {
     }
 
     private var callbacks: Callbacks? = null
+
+    private fun btnSaveClick(){
+        val reqAct = requireActivity() as MainActivity
+
+        if(pharmacyNetwork == null) {
+            pharmacyNetwork = PharmacyNetwork()
+            updatePharmacyNetwork()
+            pharmacyNetworkInfoViewModel.newPharmacyNetwork(pharmacyNetwork!!)
+            reqAct.conn.sendDataToServer("a0&${gson.toJson(pharmacyNetwork!!)}")
+        }
+        else {
+            updatePharmacyNetwork()
+            pharmacyNetworkInfoViewModel.savePharmacyNetwork(pharmacyNetwork!!)
+            reqAct.conn.sendDataToServer("e0&${gson.toJson(pharmacyNetwork!!)}")
+        }
+        callbacks?.showDBPharmacyNetworks()
+    }
+
+    private fun btnDeleteClick(){
+        val reqAct = requireActivity() as MainActivity
+
+        if(pharmacyNetwork != null) {
+            pharmacyNetworkInfoViewModel.deletePharmacyNetwork(pharmacyNetwork!!)
+            reqAct.conn.sendDataToServer("d0&${pharmacyNetwork!!.id}")
+            callbacks?.showDBPharmacyNetworks()
+        }
+    }
 }

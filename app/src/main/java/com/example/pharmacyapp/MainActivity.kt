@@ -5,13 +5,11 @@ import android.os.Bundle
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import com.example.pharmacyapp.Consts.PHARMACY_NETWORK_LIST_FRAGMENT_TAG
 import com.example.pharmacyapp.data.Pharmacy
 import com.example.pharmacyapp.data.PharmacyNetwork
-import com.example.pharmacyapp.repository.PharmacyRepository
 import com.example.pharmacyapp.tcp_connection.TCPConnection
 import java.util.*
 
@@ -23,7 +21,6 @@ class MainActivity : AppCompatActivity(),
     private val IP = "192.168.43.165"
     private val Port = 1123
     lateinit var conn: TCPConnection
-    private var startTime: Long = 0
     var fragment_name: String = "PharmacyNetworkListFragment"
     var sortType: Int = 0
     lateinit var pharmacyNetworkId: UUID
@@ -43,8 +40,7 @@ class MainActivity : AppCompatActivity(),
 
         onBackPressedDispatcher.addCallback(this, callback)
 
-        startTime = System.currentTimeMillis()
-        conn = TCPConnection(IP, Port, startTime, this@MainActivity)
+        conn = TCPConnection(IP, Port)
     }
 
     private fun checkLogout(){

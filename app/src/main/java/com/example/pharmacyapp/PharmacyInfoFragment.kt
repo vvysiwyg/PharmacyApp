@@ -14,9 +14,14 @@ import androidx.activity.OnBackPressedCallback
 import com.example.pharmacyapp.Consts.PHARMACY_ID_TAG
 import com.example.pharmacyapp.Consts.PHARMACY_NETWORK_ID_TAG
 import com.example.pharmacyapp.data.Pharmacy
+import com.google.gson.Gson
+import com.google.gson.GsonBuilder
 import java.util.*
 
 class PharmacyInfoFragment : Fragment() {
+
+    private val gsonBuilder = GsonBuilder()
+    private val gson: Gson = gsonBuilder.create()
 
     private var pharmacy: Pharmacy? = null
     private lateinit var pharmacyInfoViewModel: PharmacyInfoViewModel
@@ -96,25 +101,9 @@ class PharmacyInfoFragment : Fragment() {
         tvPaymentOption.setOnLongClickListener { setSortType(8) }
 
         btnSave=view.findViewById(R.id.addBtn)
-        btnSave.setOnClickListener{
-            if(pharmacy == null) {
-                pharmacy = Pharmacy(pnId = pharmacyNetworkId)
-                updatePharmacy()
-                pharmacyInfoViewModel.newPharmacy(pharmacy!!)
-            }
-            else {
-                updatePharmacy()
-                pharmacyInfoViewModel.savePharmacy(pharmacy!!)
-            }
-            callbacks?.showDBPharmacies(pharmacyNetworkId)
-        }
+        btnSave.setOnClickListener{ btnSaveClick(pharmacyNetworkId) }
         btnDelete=view.findViewById(R.id.deleteBtn)
-        btnDelete.setOnClickListener{
-            if(pharmacy != null){
-                pharmacyInfoViewModel.deletePharmacy(pharmacy!!)
-                callbacks?.showDBPharmacies(pharmacyNetworkId)
-            }
-        }
+        btnDelete.setOnClickListener{ btnDeleteClick(pharmacyNetworkId) }
         return view
     }
 
@@ -184,4 +173,31 @@ class PharmacyInfoFragment : Fragment() {
     }
 
     private var callbacks: Callbacks? = null
+
+    private fun btnSaveClick(pharmacyNetworkId: UUID){
+        val reqAct = requireActivity() as MainActivity
+
+        if(pharmacy == null) {
+            pharmacy = Pharmacy(pnId = pharmacyNetworkId)
+            updatePharmacy()
+            pharmacyInfoViewModel.newPharmacy(pharmacy!!)
+            reqAct.conn.sendDataToServer("a1&$pharmacyNetworkId&${gson.toJson(pharmacy!!)}")
+        }
+        else {
+            updatePharmacy()
+            pharmacyInfoViewModel.savePharmacy(pharmacy!!)
+            reqAct.conn.sendDataToServer("e1&$pharmacyNetworkId&${gson.toJson(pharmacy!!)}")
+        }
+        callbacks?.showDBPharmacies(pharmacyNetworkId)
+    }
+
+    private fun btnDeleteClick(pharmacyNetworkId: UUID){
+        val reqAct = requireActivity() as MainActivity
+
+        if(pharmacy != null){
+            pharmacyInfoViewModel.deletePharmacy(pharmacy!!)
+            reqAct.conn.sendDataToServer("d1&$pharmacyNetworkId&${pharmacy!!.id}")
+            callbacks?.showDBPharmacies(pharmacyNetworkId)
+        }
+    }
 }

@@ -7,14 +7,4 @@
         android:icon="@android:drawable/ic_menu_add"
         android:title="Add"
         app:showAsAction="ifRoom" />
-    <item
-        android:id="@+id/miChange"
-        android:title="Item" />
-    <item
-        android:id="@+id/miAdditionalInfo"
-        android:title="Item"
-        android:visible="false"/>
-    <item
-        android:id="@+id/miDelete"
-        android:title="Item" />
 </menu>

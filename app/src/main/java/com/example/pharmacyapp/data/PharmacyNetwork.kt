@@ -13,4 +13,6 @@ data class PharmacyNetwork(
     companion object {
         const val TABLE_NAME = "pharmacy_network"
     }
+    @Ignore
+    var pharmacyList: MutableList<Pharmacy?> = mutableListOf()
 }

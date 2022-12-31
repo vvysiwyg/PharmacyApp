@@ -1,10 +1,7 @@
 package com.example.pharmacyapp.tcp_connection
 
-import android.app.Activity
 import android.util.Log
-import com.example.pharmacyapp.data.Pharmacy
-import com.example.pharmacyapp.data.PharmacyNetwork
-import com.example.pharmacyapp.data.Template
+import com.example.pharmacyapp.data.PharmacyNetworkList
 import com.example.pharmacyapp.repository.PharmacyRepository
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
@@ -15,9 +12,7 @@ import java.io.PrintWriter
 import java.net.Socket
 
 class TCPConnection(private val IP: String,
-                    private val PORT: Int,
-                    private val startTime: Long,
-                    private val activity: Activity
+                    private val PORT: Int
 ) {
     private val gsonBuilder = GsonBuilder()
     private val gson: Gson = gsonBuilder.create()
@@ -38,7 +33,7 @@ class TCPConnection(private val IP: String,
                 output = PrintWriter(socket.getOutputStream())
                 input = BufferedReader(InputStreamReader(socket.getInputStream()))
                 Thread(Thread2Server()).start()
-                sendDataToServer("{R}")
+                sendDataToServer("*")
             } catch (e: IOException) {
                 e.printStackTrace()
             }
@@ -53,7 +48,7 @@ class TCPConnection(private val IP: String,
                     Log.d("com.example.pharmacyapp.tcp_connection", "message read")
                     if (message != null)
                     {
-                        activity.runOnUiThread { processingInputStream(message) }
+                        processingInputStream(message)
                     } else {
                         Log.d("com.example.pharmacyapp.tcp_connection", "message is null")
                         thread1 = Thread(Thread1Server())
@@ -103,20 +98,20 @@ class TCPConnection(private val IP: String,
 
     private fun processingInputStream(text: String)
     {
-        val serverData: Template = gson.fromJson(text, Template::class.java)
-        Log.d("com.example.pharmacyapp.tcp_connection", "Text: $text \nServer output: ${serverData.template}")
-//        pr.deleteAllData()
-//        val template: Map<PharmacyNetwork, List<Pharmacy?>> = mapOf()
-//        val serverData: Map<PharmacyNetwork, List<Pharmacy?>> = gson.fromJson(text, template::class.java)
-//
-//        for (i in serverData)
-//        {
-//            pr.addPharmacyNetwork(i.key)
-//            for(j in i.value){
-//                if(j != null)
-//                    pr.addPharmacy(j)
-//            }
-//        }
+        val serverData: PharmacyNetworkList = gson.fromJson(text, PharmacyNetworkList::class.java)
+        Log.d("com.example.pharmacyapp.tcp_connection",
+            "Text: $text \nServer output: ${serverData.pharmacyNetworkList}")
+        pr.deleteAllData()
+        for (i in serverData.pharmacyNetworkList)
+        {
+            if (i != null) {
+                pr.addPharmacyNetwork(i)
+                for(j in i.pharmacyList){
+                    if(j != null)
+                        pr.addPharmacy(j)
+                }
+            }
+        }
     }
 
     init {

@@ -3,7 +3,6 @@ package com.example.pharmacyapp
 import android.content.Context
 import androidx.lifecycle.ViewModelProvider
 import android.os.Bundle
-import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
@@ -12,16 +11,10 @@ import android.widget.TextView
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.pharmacyapp.Consts.PHARMACY_NETWORK_LIST_FRAGMENT_TAG
 import com.example.pharmacyapp.data.PharmacyNetwork
-import com.example.pharmacyapp.data.Template
-import com.google.gson.Gson
-import com.google.gson.GsonBuilder
 import java.util.*
 
 class PharmacyNetworkListFragment : Fragment() {
-    private val gsonBuilder = GsonBuilder()
-    private val gson: Gson = gsonBuilder.create()
     private lateinit var pharmacyNetworkListViewModel: PharmacyNetworkListViewModel
     private lateinit var pharmacyNetworkListRecyclerView: RecyclerView
 
@@ -52,23 +45,12 @@ class PharmacyNetworkListFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        val reqAct = requireActivity() as MainActivity
         pharmacyNetworkListViewModel = ViewModelProvider(this).get(PharmacyNetworkListViewModel::class.java)
         pharmacyNetworkListViewModel.pharmacyNetworkListLiveData.observe(
             viewLifecycleOwner,
             Observer { pharmacyNetwork ->
                 pharmacyNetwork?.let {
                     updateUI(pharmacyNetwork)
-                }
-            })
-        pharmacyNetworkListViewModel.joinedData.observe(
-            viewLifecycleOwner,
-            Observer { joinData ->
-                joinData?.let {
-                    Log.d(PHARMACY_NETWORK_LIST_FRAGMENT_TAG, joinData.toString())
-                    val template = Template(joinData)
-                    val dataToSend = gson.toJson(template)
-                    reqAct.conn.sendDataToServer("a$dataToSend")
                 }
             })
     }
