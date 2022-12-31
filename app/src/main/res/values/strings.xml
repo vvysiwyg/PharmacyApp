@@ -1,0 +1,15 @@
+<resources>
+    <string name="app_name">PharmacyApp</string>
+    <string name="tv_pharmacy_network">Название сети</string>
+    <string name="add_btn">Добавить</string>
+    <string name="del_btn">Удалить</string>
+    <string name="tv_num">Номер</string>
+    <string name="tv_address">Адрес</string>
+    <string name="tv_timetable_label">График работы</string>
+    <string name="tv_working_weekday">День недели</string>
+    <string name="tv_working_start_time">Время начала</string>
+    <string name="tv_working_end_time">Время окончания</string>
+    <string name="tv_rating">Рейтинг</string>
+    <string name="tv_is_medicine_deliver">Возможна доставка</string>
+    <string name="tv_payment_option">Способ оплаты</string>
+</resources>
