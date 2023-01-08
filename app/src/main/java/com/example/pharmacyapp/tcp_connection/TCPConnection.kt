@@ -1,6 +1,8 @@
 package com.example.pharmacyapp.tcp_connection
 
 import android.util.Log
+import android.widget.Toast
+import com.example.pharmacyapp.MainActivity
 import com.example.pharmacyapp.data.PharmacyNetworkList
 import com.example.pharmacyapp.repository.PharmacyRepository
 import com.google.gson.Gson
@@ -12,7 +14,9 @@ import java.io.PrintWriter
 import java.net.Socket
 
 class TCPConnection(private val IP: String,
-                    private val PORT: Int
+                    private val PORT: Int,
+                    private val startTime: Long,
+                    private val activity: MainActivity
 ) {
     private val gsonBuilder = GsonBuilder()
     private val gson: Gson = gsonBuilder.create()
@@ -32,6 +36,7 @@ class TCPConnection(private val IP: String,
                 Log.d("com.example.pharmacyapp.tcp_connection", "after socket init")
                 output = PrintWriter(socket.getOutputStream())
                 input = BufferedReader(InputStreamReader(socket.getInputStream()))
+                activity.connType = 2
                 Thread(Thread2Server()).start()
                 sendDataToServer("*")
             } catch (e: IOException) {
@@ -72,23 +77,25 @@ class TCPConnection(private val IP: String,
         }
     }
 
-//    internal inner class ThreadT : Runnable
-//    {
-//        override fun run() {
-//            while (true)
-//            {
-//                if (System.currentTimeMillis() - startTime > 5000L)
-//                {
-//                    activity.runOnUiThread { Toast.makeText(
-//                        activity,
-//                        "Подключиться не удалось!\n" +
-//                                "Будут использоваться данные из локальной базы данных.",
-//                        Toast.LENGTH_LONG
-//                    ).show() }
-//                }
-//            }
-//        }
-//    }
+    internal inner class ThreadT : Runnable
+    {
+        override fun run() {
+            while (true)
+            {
+                if (System.currentTimeMillis() - startTime > 5000L && activity.connType == 0)
+                {
+                    activity.runOnUiThread { Toast.makeText(
+                        activity,
+                        "Не удалось подключиться к серверу. " +
+                                "Будут использованы данные из локальной базы данных.",
+                        Toast.LENGTH_LONG
+                    ).show() }
+                    activity.showDBPharmacyNetworks()
+                    activity.connType = 1
+                }
+            }
+        }
+    }
 
     fun sendDataToServer(text: String)
     {
@@ -112,12 +119,13 @@ class TCPConnection(private val IP: String,
                 }
             }
         }
+        activity.showDBPharmacyNetworks()
     }
 
     init {
         thread1 = Thread(Thread1Server())
         thread1!!.start()
-//        threadT = Thread(ThreadT())
-//        threadT!!.start()
+        threadT = Thread(ThreadT())
+        threadT!!.start()
     }
 }

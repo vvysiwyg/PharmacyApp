@@ -47,12 +47,18 @@ class PharmacyNetworkInfoFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val reqAct = requireActivity() as MainActivity
+        reqAct.miAdd?.isVisible = false
         val view = inflater.inflate(R.layout.pharmacy_network_info, container, false)
         etPharmacyNetwork=view.findViewById(R.id.etPharmacyNetwork)
         btnSave=view.findViewById(R.id.pnAddBtn)
         btnSave.setOnClickListener{ btnSaveClick() }
         btnDelete=view.findViewById(R.id.pnDeleteBtn)
         btnDelete.setOnClickListener{ btnDeleteClick() }
+        if(reqAct.connType == 1){
+            btnSave.visibility = View.INVISIBLE
+            btnDelete.visibility = View.INVISIBLE
+        }
         return view
     }
 
@@ -74,12 +80,14 @@ class PharmacyNetworkInfoFragment : Fragment() {
     override fun onAttach(context: Context){
         super.onAttach(context)
         callbacks = context as Callbacks?
+        val reqAct = requireActivity() as MainActivity
 
         val callback: OnBackPressedCallback =
             object: OnBackPressedCallback(true)
             {
                 override fun handleOnBackPressed() {
                     callbacks?.showDBPharmacyNetworks()
+                    reqAct.miAdd?.isVisible = true
                 }
             }
         requireActivity().onBackPressedDispatcher.addCallback(
@@ -104,20 +112,23 @@ class PharmacyNetworkInfoFragment : Fragment() {
     private var callbacks: Callbacks? = null
 
     private fun btnSaveClick(){
-        val reqAct = requireActivity() as MainActivity
+        if(!setEditTextError())
+        {
+            val reqAct = requireActivity() as MainActivity
 
-        if(pharmacyNetwork == null) {
-            pharmacyNetwork = PharmacyNetwork()
-            updatePharmacyNetwork()
-            pharmacyNetworkInfoViewModel.newPharmacyNetwork(pharmacyNetwork!!)
-            reqAct.conn.sendDataToServer("a0&${gson.toJson(pharmacyNetwork!!)}")
+            if (pharmacyNetwork == null) {
+                pharmacyNetwork = PharmacyNetwork()
+                updatePharmacyNetwork()
+                pharmacyNetworkInfoViewModel.newPharmacyNetwork(pharmacyNetwork!!)
+                reqAct.conn.sendDataToServer("a0&${gson.toJson(pharmacyNetwork!!)}")
+            } else {
+                updatePharmacyNetwork()
+                pharmacyNetworkInfoViewModel.savePharmacyNetwork(pharmacyNetwork!!)
+                reqAct.conn.sendDataToServer("e0&${gson.toJson(pharmacyNetwork!!)}")
+            }
+            reqAct.miAdd?.isVisible = true
+            callbacks?.showDBPharmacyNetworks()
         }
-        else {
-            updatePharmacyNetwork()
-            pharmacyNetworkInfoViewModel.savePharmacyNetwork(pharmacyNetwork!!)
-            reqAct.conn.sendDataToServer("e0&${gson.toJson(pharmacyNetwork!!)}")
-        }
-        callbacks?.showDBPharmacyNetworks()
     }
 
     private fun btnDeleteClick(){
@@ -126,7 +137,17 @@ class PharmacyNetworkInfoFragment : Fragment() {
         if(pharmacyNetwork != null) {
             pharmacyNetworkInfoViewModel.deletePharmacyNetwork(pharmacyNetwork!!)
             reqAct.conn.sendDataToServer("d0&${pharmacyNetwork!!.id}")
+            reqAct.miAdd?.isVisible = true
             callbacks?.showDBPharmacyNetworks()
         }
+    }
+
+    private fun setEditTextError(): Boolean{
+        var flag = false
+        if(etPharmacyNetwork.text.isBlank()){
+            etPharmacyNetwork.error = "Поле не может быть пустым"
+            flag = true
+        }
+        return flag
     }
 }

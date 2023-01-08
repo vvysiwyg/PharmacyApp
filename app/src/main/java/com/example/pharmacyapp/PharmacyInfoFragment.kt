@@ -70,6 +70,8 @@ class PharmacyInfoFragment : Fragment() {
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
+        val reqAct = requireActivity() as MainActivity
+        reqAct.miAdd?.isVisible = false
         val view = inflater.inflate(R.layout.pharmacy_info, container, false)
         val pharmacyNetworkId = UUID.fromString(arguments?.getString(PHARMACY_NETWORK_ID_TAG))
 
@@ -104,6 +106,10 @@ class PharmacyInfoFragment : Fragment() {
         btnSave.setOnClickListener{ btnSaveClick(pharmacyNetworkId) }
         btnDelete=view.findViewById(R.id.deleteBtn)
         btnDelete.setOnClickListener{ btnDeleteClick(pharmacyNetworkId) }
+        if(reqAct.connType == 1){
+            btnSave.visibility = View.INVISIBLE
+            btnDelete.visibility = View.INVISIBLE
+        }
         return view
     }
 
@@ -114,7 +120,13 @@ class PharmacyInfoFragment : Fragment() {
         pharmacy?.workingStartTime = etWorkingStartTime.text.toString()
         pharmacy?.workingEndTime = etWorkingEndTime.text.toString()
         pharmacy?.rating = etRating.text.toString().toDouble()
-        pharmacy?.isMedicineDeliver = etIsMedicineDeliver.text.toString().toBoolean()
+        pharmacy?.isMedicineDeliver =
+            when(etIsMedicineDeliver.text.toString())
+            {
+                "Да" -> true
+                "Нет" -> false
+                else -> false
+            }
         pharmacy?.paymentOption = etPaymentOption.text.toString()
     }
 
@@ -132,12 +144,14 @@ class PharmacyInfoFragment : Fragment() {
     override fun onAttach(context: Context){
         super.onAttach(context)
         callbacks = context as Callbacks?
+        val reqAct = requireActivity() as MainActivity
 
         val callback: OnBackPressedCallback =
             object: OnBackPressedCallback(true)
             {
                 override fun handleOnBackPressed() {
                     callbacks?.showDBPharmacies(UUID.fromString(arguments?.getString(PHARMACY_NETWORK_ID_TAG)))
+                    reqAct.miAdd?.isVisible = true
                 }
             }
         requireActivity().onBackPressedDispatcher.addCallback(
@@ -158,7 +172,12 @@ class PharmacyInfoFragment : Fragment() {
         etWorkingStartTime.setText(pharmacy?.workingStartTime)
         etWorkingEndTime.setText(pharmacy?.workingEndTime)
         etRating.setText(pharmacy?.rating.toString())
-        etIsMedicineDeliver.setText(pharmacy?.isMedicineDeliver.toString())
+        etIsMedicineDeliver.setText(
+            when(pharmacy?.isMedicineDeliver){
+            true -> "Да"
+            false -> "Нет"
+            else -> ""
+        })
         etPaymentOption.setText(pharmacy?.paymentOption)
     }
 
@@ -175,20 +194,23 @@ class PharmacyInfoFragment : Fragment() {
     private var callbacks: Callbacks? = null
 
     private fun btnSaveClick(pharmacyNetworkId: UUID){
-        val reqAct = requireActivity() as MainActivity
+        if(!setEditTextError())
+        {
+            val reqAct = requireActivity() as MainActivity
 
-        if(pharmacy == null) {
-            pharmacy = Pharmacy(pnId = pharmacyNetworkId)
-            updatePharmacy()
-            pharmacyInfoViewModel.newPharmacy(pharmacy!!)
-            reqAct.conn.sendDataToServer("a1&$pharmacyNetworkId&${gson.toJson(pharmacy!!)}")
+            if (pharmacy == null) {
+                pharmacy = Pharmacy(pnId = pharmacyNetworkId)
+                updatePharmacy()
+                pharmacyInfoViewModel.newPharmacy(pharmacy!!)
+                reqAct.conn.sendDataToServer("a1&$pharmacyNetworkId&${gson.toJson(pharmacy!!)}")
+            } else {
+                updatePharmacy()
+                pharmacyInfoViewModel.savePharmacy(pharmacy!!)
+                reqAct.conn.sendDataToServer("e1&$pharmacyNetworkId&${gson.toJson(pharmacy!!)}")
+            }
+            reqAct.miAdd?.isVisible = true
+            callbacks?.showDBPharmacies(pharmacyNetworkId)
         }
-        else {
-            updatePharmacy()
-            pharmacyInfoViewModel.savePharmacy(pharmacy!!)
-            reqAct.conn.sendDataToServer("e1&$pharmacyNetworkId&${gson.toJson(pharmacy!!)}")
-        }
-        callbacks?.showDBPharmacies(pharmacyNetworkId)
     }
 
     private fun btnDeleteClick(pharmacyNetworkId: UUID){
@@ -197,7 +219,45 @@ class PharmacyInfoFragment : Fragment() {
         if(pharmacy != null){
             pharmacyInfoViewModel.deletePharmacy(pharmacy!!)
             reqAct.conn.sendDataToServer("d1&$pharmacyNetworkId&${pharmacy!!.id}")
+            reqAct.miAdd?.isVisible = true
             callbacks?.showDBPharmacies(pharmacyNetworkId)
         }
+    }
+
+    private fun setEditTextError(): Boolean{
+        var flag = false
+        if(etNum.text.isBlank()){
+            etNum.error = "Поле не может быть пустым"
+            flag = true
+        }
+        if(etAddress.text.isBlank()){
+            etAddress.error = "Поле не может быть пустым"
+            flag = true
+        }
+        if(etWorkingWeekday.text.isBlank()){
+            etWorkingWeekday.error = "Поле не может быть пустым"
+            flag = true
+        }
+        if(etWorkingStartTime.text.isBlank()){
+            etWorkingStartTime.error = "Поле не может быть пустым"
+            flag = true
+        }
+        if(etWorkingEndTime.text.isBlank()){
+            etWorkingEndTime.error = "Поле не может быть пустым"
+            flag = true
+        }
+        if(etRating.text.isBlank()){
+            etRating.error = "Поле не может быть пустым"
+            flag = true
+        }
+        if(etIsMedicineDeliver.text.isBlank()){
+            etIsMedicineDeliver.error = "Поле не может быть пустым"
+            flag = true
+        }
+        if(etPaymentOption.text.isBlank()){
+            etPaymentOption.error = "Поле не может быть пустым"
+            flag = true
+        }
+        return flag
     }
 }

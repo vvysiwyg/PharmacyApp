@@ -2,6 +2,7 @@ package com.example.pharmacyapp
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
@@ -21,15 +22,18 @@ class MainActivity : AppCompatActivity(),
     private val IP = "192.168.43.165"
     private val Port = 1123
     lateinit var conn: TCPConnection
+    var connType = 0
+    var startTime: Long = 0
     var fragment_name: String = "PharmacyNetworkListFragment"
     var sortType: Int = 0
     lateinit var pharmacyNetworkId: UUID
-    private var miAdd: MenuItem? = null
+    var miAdd: MenuItem? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        showDBPharmacyNetworks()
+        startTime = System.currentTimeMillis()
+        conn = TCPConnection(IP, Port, startTime, this@MainActivity)
         val callback: OnBackPressedCallback =
             object: OnBackPressedCallback(true)
             {
@@ -40,7 +44,6 @@ class MainActivity : AppCompatActivity(),
 
         onBackPressedDispatcher.addCallback(this, callback)
 
-        conn = TCPConnection(IP, Port)
     }
 
     private fun checkLogout(){
