@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity(),
     PharmacyListFragment.Callbacks,
     PharmacyNetworkInfoFragment.Callbacks,
     PharmacyNetworkListFragment.Callbacks {
-    private val IP = "192.168.43.165"
+    private val IP = "0.0.0.0"  // Здесь указываем свой ip
     private val Port = 1123
     lateinit var conn: TCPConnection
     var connType = 0
