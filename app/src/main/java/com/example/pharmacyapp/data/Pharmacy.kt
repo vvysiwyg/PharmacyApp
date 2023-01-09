@@ -14,7 +14,7 @@ import java.util.*
     CASCADE,
     NO_ACTION)])
 data class Pharmacy(
-    @PrimaryKey val id: UUID = UUID.randomUUID(),
+    @PrimaryKey var id: UUID = UUID.randomUUID(),
     var number: Int = 0,
     var address: String="",
     var workingWeekDay: String = "",

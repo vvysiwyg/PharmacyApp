@@ -31,4 +31,8 @@ class PharmacyInfoViewModel : ViewModel() {
     fun deletePharmacy(pharmacy: Pharmacy) {
         pharmacyRepository.deletePharmacy(pharmacy)
     }
+
+    fun getPharmacyIds(): LiveData<List<UUID>?> {
+        return pharmacyRepository.getPharmacyIds()
+    }
 }

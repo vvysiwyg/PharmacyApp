@@ -12,14 +12,14 @@ interface PharmacyNetworkDao {
     fun getPharmacyNetworks(): LiveData<List<PharmacyNetwork>>
     @Query("SELECT * FROM pharmacy_network WHERE id = (:id)")
     fun getPharmacyNetwork(id: UUID): LiveData<PharmacyNetwork?>
-    @Query("SELECT * FROM pharmacy_network JOIN pharmacy ON pharmacy_network.id = pharmacy.pnId")
-    fun getJoinData(): LiveData<Map<PharmacyNetwork, List<Pharmacy?>>>
+    @Query("SELECT id FROM pharmacy_network")
+    fun getPharmacyNetworkIds(): LiveData<List<UUID>?>
     @Query("DELETE FROM pharmacy_network")
     fun deleteAllData()
 
     @Update
     fun updatePharmacyNetwork(pharmacyNetwork: PharmacyNetwork)
-    @Insert
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     fun addPharmacyNetwork(pharmacyNetwork: PharmacyNetwork)
     @Delete
     fun deletePharmacyNetwork(pharmacyNetwork: PharmacyNetwork)

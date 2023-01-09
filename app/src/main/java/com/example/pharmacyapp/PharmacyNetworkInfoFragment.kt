@@ -19,7 +19,9 @@ class PharmacyNetworkInfoFragment : Fragment() {
 
     private val gsonBuilder = GsonBuilder()
     private val gson: Gson = gsonBuilder.create()
+
     private var pharmacyNetwork: PharmacyNetwork? = null
+    private lateinit var pharmacyNetworkIdList: List<UUID>
     private lateinit var pharmacyNetworkInfoViewModel: PharmacyNetworkInfoViewModel
     private lateinit var etPharmacyNetwork: EditText
     private lateinit var btnSave: Button
@@ -75,6 +77,11 @@ class PharmacyNetworkInfoFragment : Fragment() {
         }
             btnDelete.isEnabled = pharmacyNetworkInfoViewModel.pharmacyNetworkLiveData.value != null
         }
+        pharmacyNetworkInfoViewModel.getPharmacyNetworkIds().observe(viewLifecycleOwner){
+                    ids -> ids?.let {
+                pharmacyNetworkIdList = ids
+            }
+        }
     }
 
     override fun onAttach(context: Context){
@@ -120,11 +127,11 @@ class PharmacyNetworkInfoFragment : Fragment() {
                 pharmacyNetwork = PharmacyNetwork()
                 updatePharmacyNetwork()
                 pharmacyNetworkInfoViewModel.newPharmacyNetwork(pharmacyNetwork!!)
-                reqAct.conn.sendDataToServer("a0&${gson.toJson(pharmacyNetwork!!)}")
+                reqAct.conn.sendData("a0&${gson.toJson(pharmacyNetwork!!)}")
             } else {
                 updatePharmacyNetwork()
                 pharmacyNetworkInfoViewModel.savePharmacyNetwork(pharmacyNetwork!!)
-                reqAct.conn.sendDataToServer("e0&${gson.toJson(pharmacyNetwork!!)}")
+                reqAct.conn.sendData("e0&${gson.toJson(pharmacyNetwork!!)}")
             }
             reqAct.miAdd?.isVisible = true
             callbacks?.showDBPharmacyNetworks()
@@ -136,7 +143,7 @@ class PharmacyNetworkInfoFragment : Fragment() {
 
         if(pharmacyNetwork != null) {
             pharmacyNetworkInfoViewModel.deletePharmacyNetwork(pharmacyNetwork!!)
-            reqAct.conn.sendDataToServer("d0&${pharmacyNetwork!!.id}")
+            reqAct.conn.sendData("d0&${pharmacyNetwork!!.id}")
             reqAct.miAdd?.isVisible = true
             callbacks?.showDBPharmacyNetworks()
         }

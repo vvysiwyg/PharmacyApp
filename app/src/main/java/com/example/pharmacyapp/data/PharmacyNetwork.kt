@@ -7,7 +7,7 @@ import java.util.*
 
 @Entity(tableName = PharmacyNetwork.TABLE_NAME)
 data class PharmacyNetwork(
-    @PrimaryKey val id: UUID = UUID.randomUUID(),
+    @PrimaryKey var id: UUID = UUID.randomUUID(),
     var name: String=""
 ) {
     companion object {

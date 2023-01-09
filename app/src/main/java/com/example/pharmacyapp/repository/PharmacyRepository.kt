@@ -37,10 +37,12 @@ class PharmacyRepository private constructor(context: Context){
 
     fun getPharmacies(pnId: UUID): LiveData<List<Pharmacy>> = pharmacyDao.getPharmacies(pnId)
     fun getPharmacy(id: UUID): LiveData<Pharmacy?> = pharmacyDao.getPharmacy(id)
+    fun getPharmacyIds(): LiveData<List<UUID>?> = pharmacyDao.getPharmacyIds()
 
     fun getPharmacyNetworks(): LiveData<List<PharmacyNetwork>> = pharmacyNetworkDao.getPharmacyNetworks()
     fun getPharmacyNetwork(id: UUID): LiveData<PharmacyNetwork?> = pharmacyNetworkDao.getPharmacyNetwork(id)
-    fun getJoinData(): LiveData<Map<PharmacyNetwork, List<Pharmacy?>>> = pharmacyNetworkDao.getJoinData()
+    fun getPharmacyNetworkIds(): LiveData<List<UUID>?> = pharmacyNetworkDao.getPharmacyNetworkIds()
+
     fun deleteAllData() = pharmacyNetworkDao.deleteAllData()
 
     private val executor = Executors.newSingleThreadExecutor()

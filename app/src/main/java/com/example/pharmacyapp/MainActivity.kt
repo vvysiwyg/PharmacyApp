@@ -6,6 +6,7 @@ import android.util.Log
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import com.example.pharmacyapp.Consts.PHARMACY_NETWORK_LIST_FRAGMENT_TAG
@@ -33,6 +34,7 @@ class MainActivity : AppCompatActivity(),
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
         startTime = System.currentTimeMillis()
+        Toast.makeText(this, "Подключение к серверу...", Toast.LENGTH_SHORT).show()
         conn = TCPConnection(IP, Port, startTime, this@MainActivity)
         val callback: OnBackPressedCallback =
             object: OnBackPressedCallback(true)

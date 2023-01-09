@@ -1,6 +1,5 @@
 package com.example.pharmacyapp.tcp_connection
 
-import android.util.Log
 import android.widget.Toast
 import com.example.pharmacyapp.MainActivity
 import com.example.pharmacyapp.data.PharmacyNetworkList
@@ -23,40 +22,36 @@ class TCPConnection(private val IP: String,
     private var output: PrintWriter? = null
     private var input: BufferedReader? = null
     var thread1: Thread? = null
-    private var threadT: Thread? = null
+    private var thread4: Thread? = null
     val pr = PharmacyRepository.get()
 
-    internal inner class Thread1Server : Runnable {
+    internal inner class Thread1 : Runnable {
         override fun run()
         {
             val socket: Socket
             try {
-                Log.d("com.example.pharmacyapp.tcp_connection", "before socket init")
                 socket = Socket(IP, PORT)
-                Log.d("com.example.pharmacyapp.tcp_connection", "after socket init")
                 output = PrintWriter(socket.getOutputStream())
                 input = BufferedReader(InputStreamReader(socket.getInputStream()))
                 activity.connType = 2
-                Thread(Thread2Server()).start()
-                sendDataToServer("*")
+                Thread(Thread2()).start()
+                sendData("*")
             } catch (e: IOException) {
                 e.printStackTrace()
             }
         }
     }
 
-    internal inner class Thread2Server : Runnable {
+    internal inner class Thread2 : Runnable {
         override fun run() {
             while (true) {
                 try {
                     val message = input!!.readLine()
-                    Log.d("com.example.pharmacyapp.tcp_connection", "message read")
                     if (message != null)
                     {
-                        processingInputStream(message)
+                        readData(message)
                     } else {
-                        Log.d("com.example.pharmacyapp.tcp_connection", "message is null")
-                        thread1 = Thread(Thread1Server())
+                        thread1 = Thread(Thread1())
                         thread1!!.start()
                         return
                     }
@@ -67,17 +62,16 @@ class TCPConnection(private val IP: String,
         }
     }
 
-    internal inner class Thread3Server(private val message: String) : Runnable
+    internal inner class Thread3(private val message: String) : Runnable
     {
         override fun run()
         {
-            Log.d("com.example.pharmacyapp.tcp_connection", "Thread3Server.run")
             output!!.write(message)
             output!!.flush()
         }
     }
 
-    internal inner class ThreadT : Runnable
+    internal inner class Thread4 : Runnable
     {
         override fun run() {
             while (true)
@@ -86,8 +80,7 @@ class TCPConnection(private val IP: String,
                 {
                     activity.runOnUiThread { Toast.makeText(
                         activity,
-                        "Не удалось подключиться к серверу. " +
-                                "Будут использованы данные из локальной базы данных.",
+                        "Не удалось подключиться к серверу. Будут использованы данные из локальной базы данных.",
                         Toast.LENGTH_LONG
                     ).show() }
                     activity.showDBPharmacyNetworks()
@@ -97,17 +90,14 @@ class TCPConnection(private val IP: String,
         }
     }
 
-    fun sendDataToServer(text: String)
+    fun sendData(text: String)
     {
-        Log.d("com.example.pharmacyapp.tcp_connection", "Before send data: $text")
-        Thread(Thread3Server(text + "\n")).start()
+        Thread(Thread3(text + "\n")).start()
     }
 
-    private fun processingInputStream(text: String)
+    private fun readData(text: String)
     {
         val serverData: PharmacyNetworkList = gson.fromJson(text, PharmacyNetworkList::class.java)
-        Log.d("com.example.pharmacyapp.tcp_connection",
-            "Text: $text \nServer output: ${serverData.pharmacyNetworkList}")
         pr.deleteAllData()
         for (i in serverData.pharmacyNetworkList)
         {
@@ -123,9 +113,9 @@ class TCPConnection(private val IP: String,
     }
 
     init {
-        thread1 = Thread(Thread1Server())
+        thread1 = Thread(Thread1())
         thread1!!.start()
-        threadT = Thread(ThreadT())
-        threadT!!.start()
+        thread4 = Thread(Thread4())
+        thread4!!.start()
     }
 }
